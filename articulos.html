@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artículos</title>
+    <link rel="icon" type="image/png" href="img/working.png">
+
+    <!-- ESTILOS DEL MENU -->
+    <link href="menu/styles.css" rel="stylesheet" />
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <!-- DATATABLES -->
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <!-- ALERTIFYJS -->
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+    <!-- Animate.css para animaciones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="alert/alertify.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .table {
+            background: #fff;
+        }
+        .modal-content {
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        .btn-primary, .btn-success, .btn-danger, .btn-warning {
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover, .btn-success:hover, .btn-danger:hover, .btn-warning:hover {
+            transform: scale(1.07);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 20px;
+            border: 1px solid #b6b6b6;
+            padding: 4px 12px;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 50px !important;
+            margin: 0 2px;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #0d6efd !important;
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark shadow animate__animated animate__fadeInDown">
+        <a class="navbar-brand ps-3" href="menu.html"><i class="bi bi-arrow-left-circle"></i> Volver</a>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="bi bi-list"></i></button>
+        <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0"></form>
+        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-fill"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="#!">Config.</a></li>
+                    <li><a class="dropdown-item" href="#!">Activity Log</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><a class="dropdown-item" href="#" onclick="cerrarSesion()">Cerrar sesión</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <a class="nav-link" href="menu.html">
+                            <div class="sb-nav-link-icon"><i class="bi bi-house-door"></i></div>
+                            Menú
+                        </a>
+                    </div>
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Iniciado por:</div>
+                    <div id="usuario">Usuario</div>
+                </div>
+            </nav>
+        </div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-3">
+                    <h1 class="mt-3 mb-4 text-primary fw-bold animate__animated animate__fadeInDown">Artículos</h1>
+                    <div class="row animate__animated animate__fadeInUp">
+                        <!-- Justo antes de <table id="tabla_articulos"... -->
+
+                        <table id="tabla_articulos" class="display compact table table-striped table-hover shadow rounded" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Id Artículo</th>
+                                    <th>Cod. de Barra</th>
+                                    <th>Descripción</th>
+                                    <th>Marca</th>
+                                    <th>Clasificación</th>
+                                    <th>IVA</th>
+                                    <th>Stock</th>
+                                    <th>Costo</th>
+                                    <th>Precio</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Articulo -->
+    <div class="modal fade" id="modalNuevoArticulo" tabindex="-1" aria-labelledby="modalArticuloLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog animate__animated animate__zoomIn">
+            <form id="formNuevoArticulo" class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalArticuloLabel"><i class="bi bi-plus-circle"></i> Agregar Nuevo Artículo</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" id="descripcion" class="form-control text-uppercase" required minlength="6" maxlength="50">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Cod. de Barra</label>
+                        <input type="text" id="codbarra" class="form-control" required pattern="\d*" title="Solo números" maxlength="13" inputmode="numeric">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Precio</label>
+                        <input type="number" id="precio" class="form-control" required min="0">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">IVA</label>
+                        <select class="form-select" id="iva" required>
+                            <option value="0">0</option>
+                            <option value="10">10</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Clasificación</label>
+                        <select class="form-select" id="clasificacion" required></select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Marca</label>
+                        <select class="form-select" id="marca"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-danger" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Articulo -->
+    <div class="modal fade" id="modalEditarArticulo" tabindex="-1" aria-labelledby="modalEditarArticuloLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog animate__animated animate__zoomIn">
+            <form id="formEditarArticulo" class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="modalEditarArticuloLabel"><i class="bi bi-pencil-square"></i> Editar Artículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_idarticulo">
+                    <div class="mb-2">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" id="edit_descripcion" class="form-control text-uppercase" required minlength="6" maxlength="50">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Cod. de Barra</label>
+                        <input type="number" id="edit_codbarra" class="form-control" required maxlength="13" pattern="\d*" title="Solo números" inputmode="numeric">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Precio</label>
+                        <input type="number" id="edit_precio" class="form-control" required min="0">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">IVA</label>
+                        <select class="form-select" id="edit_iva" required>
+                            <option value="0">0</option>
+                            <option value="10">10</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Clasificación</label>
+                        <select class="form-select" id="edit_clasificacion" required></select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Marca</label>
+                        <select class="form-select" id="edit_marca"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="js/menu.js"></script>
+    <script src="js/bdP.js"></script>
+    <script src="js/sistemFunctions.js"></script>
+    <script src="menu/bootstrap.bundle.min.js"></script>
+    <script src="menu/scripts.js"></script>
+    <!-- DATATABLES -->
+    <script src="dt/jquery-3.7.1.js"></script>
+    <script src="dt/datatables.min.js"></script>
+    <script src="dt/jquery.dataTables.min.js"></script>
+    <script src="dt/dataTables.buttons.min.js"></script>
+    <script src="dt/buttons.print.min.js"></script>
+    <script src="dt/buttons.html5.min.js"></script>
+    <script src="dt/jszip.min.js"></script>
+    <script src="dt/pdfmake.min.js"></script>
+    <script src="dt/vfs_fonts.js"></script>
+    <script src="dt/es-ES.js"></script>
+    <script>
+    // Seguridad de sesión
+    if(!sessionStorage.getItem("sesionActiva")){
+        localStorage.removeItem("nomUsuario");
+        localStorage.removeItem("rolUsuario");
+        window.location.href = "Pagerror.html";
+    }
+
+    // Mostrar usuario en el footer
+    var usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    document.getElementById('usuario').textContent = localStorage.getItem("nomUsuario") || "Usuario";
+
+    // Cargar combos de marcas y clasificaciones
+    function cargarCombos() {
+        // Nuevo Artículo
+        const comboClas = document.getElementById("clasificacion");
+        comboClas.innerHTML = "";
+        const clasificaciones = JSON.parse(localStorage.getItem("clasificaciones")) || [];
+        clasificaciones.forEach(cl => {
+            const option = document.createElement("option");
+            option.value = cl.idclasificacion;
+            option.textContent = cl.clasificacion;
+            comboClas.appendChild(option);
+        });
+
+        const comboMarca = document.getElementById("marca");
+        comboMarca.innerHTML = "";
+        const marcas = JSON.parse(localStorage.getItem("marcas")) || [];
+        marcas.forEach(m => {
+            const option = document.createElement("option");
+            option.value = m.idmarca;
+            option.textContent = m.marca;
+            comboMarca.appendChild(option);
+        });
+
+        // Editar Artículo
+        const comboEditClas = document.getElementById("edit_clasificacion");
+        comboEditClas.innerHTML = "";
+        clasificaciones.forEach(cl => {
+            const option = document.createElement("option");
+            option.value = cl.idclasificacion;
+            option.textContent = cl.clasificacion;
+            comboEditClas.appendChild(option);
+        });
+
+        const comboEditMarca = document.getElementById("edit_marca");
+        comboEditMarca.innerHTML = "";
+        marcas.forEach(m => {
+            const option = document.createElement("option");
+            option.value = m.idmarca;
+            option.textContent = m.marca;
+            comboEditMarca.appendChild(option);
+        });
+    }
+
+    // Inicializar datos si no existen
+    let articulos = JSON.parse(localStorage.getItem("articulos"));
+    if (!articulos || !Array.isArray(articulos) || articulos.length === 0) {
+        if (typeof datos === "function") datos();
+        articulos = JSON.parse(localStorage.getItem("articulos")) || [];
+    }
+    let tabla;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        cargarCombos();
+        cargarTablaArticulos();
+
+        // Animación para mostrar la tabla
+        document.querySelector('.row').classList.add('animate__animated', 'animate__fadeInUp');
+
+        // Evento para agregar un nuevo articulo
+        document.getElementById('formNuevoArticulo').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const nuevoArticulo= {
+                idarticulo: obtenerSiguienteId(articulos),
+                codbarra: document.getElementById('codbarra').value.trim().toUpperCase(),
+                descripcion: document.getElementById('descripcion').value.trim().toUpperCase(),
+                idmarca: document.getElementById('marca').value.trim(),
+                idclasificacion: document.getElementById('clasificacion').value.trim(),
+                tiva: document.getElementById('iva').value.trim(),
+                precio: document.getElementById('precio').value.trim(),
+                preventa: document.getElementById('precio').value.trim(),
+                stockactual: 0
+            };
+            const codbarra = document.getElementById('codbarra').value.trim();
+
+            if (verificarId(articulos, 'codbarra', codbarra)) {
+                alertify.error("El código de barra ya está asociado a otro artículo.");
+                return;
+            }
+
+            articulos.push(nuevoArticulo);
+            guardarArticulos(articulos);
+            this.reset();
+            $('#modalNuevoArticulo').modal('hide');
+            alertify.success("Artículo agregado correctamente.");
+        });
+
+        // Evento para editar un Articulo
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.btn-editar')) {
+                cargarCombos();
+                const id = parseInt(e.target.closest('.btn-editar').dataset.id);
+                const articulo = articulos.find(a => a.idarticulo === id);
+                if (articulo) {
+                    document.getElementById('edit_idarticulo').value = articulo.idarticulo;
+                    document.getElementById('edit_codbarra').value = articulo.codbarra;
+                    document.getElementById('edit_descripcion').value = articulo.descripcion;
+                    document.getElementById('edit_marca').value = articulo.idmarca;
+                    document.getElementById('edit_clasificacion').value = articulo.idclasificacion;
+                    document.getElementById('edit_iva').value = articulo.tiva;
+                    document.getElementById('edit_precio').value = articulo.precio;
+                    $('#modalEditarArticulo').modal('show');
+                }
+            }
+        });
+
+        document.getElementById('formEditarArticulo').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('edit_idarticulo').value);
+            const index = articulos.findIndex(a => a.idarticulo === id);
+            if (index !== -1) {
+                const codbarraNuevo = document.getElementById('edit_codbarra').value.trim().toUpperCase();
+
+                // Verificar si codbarra ya existe en otro artículo
+                const existeDuplicado = articulos.some((a, i) =>
+                    a.codbarra === codbarraNuevo && i !== index
+                );
+
+                if (existeDuplicado) {
+                    alertify.error("El código de barra ya está asociado a otro artículo.");
+                    return;
+                }
+                const articuloOriginal = articulos[index];
+                articulos[index] = {
+                    idarticulo: id,
+                    codbarra: document.getElementById('edit_codbarra').value.trim().toUpperCase(),
+                    descripcion: document.getElementById('edit_descripcion').value.trim().toUpperCase(),
+                    idmarca: document.getElementById('edit_marca').value.trim(),
+                    idclasificacion: document.getElementById('edit_clasificacion').value.trim(),
+                    tiva: document.getElementById('edit_iva').value.trim(),
+                    precio: document.getElementById('edit_precio').value.trim(),
+                    preventa: document.getElementById('edit_precio').value.trim(),
+                    stockactual: articuloOriginal.stockactual || 0
+                };
+                guardarArticulos(articulos);
+                tabla.clear().rows.add(articulos).draw();
+                $('#modalEditarArticulo').modal('hide');
+                alertify.success("Artículo actualizado correctamente.");
+            }
+        });
+
+        // Evento para eliminar un articulo
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.btn-eliminar')) {
+                const id = parseInt(e.target.closest('.btn-eliminar').dataset.id);
+                alertify.confirm("Eliminar Artículo", "¿Estás seguro de eliminar este artículo?",
+                    function () {
+                        articulos = articulos.filter(p => p.idarticulo !== id);
+                        guardarArticulos(articulos);
+                        tabla.clear().rows.add(articulos).draw();
+                        alertify.success("Artículo eliminado correctamente.");
+                    },
+                    function () {
+                        alertify.error("Eliminación cancelada.");
+                    }
+                ).set('labels', { ok: 'Sí', cancel: 'No' });
+            }
+        });
+    });
+
+    function cargarTablaArticulos() {
+        if ($.fn.DataTable.isDataTable('#tabla_articulos')) {
+            $('#tabla_articulos').DataTable().destroy();
+        }
+
+        tabla = new DataTable("#tabla_articulos", {
+            data: articulos,
+            columns: [
+                { data: 'idarticulo', title: 'Id' },
+                { data: 'codbarra', title: 'Cod. de Barra' },
+                { data: 'descripcion', title: 'Descripción' },
+                { data: 'idmarca', title: 'Marca',
+                    render: function(data) {
+                        const marcas = JSON.parse(localStorage.getItem('marcas')) || [];
+                        const marca = marcas.find((m) => String(m.idmarca) === String(data));
+                        return marca ? marca.marca : 'Desconocido';
+                    }
+                },
+                { data: 'idclasificacion', title: 'Clasificación',
+                    render: function(data) {
+                        const clasificaciones = JSON.parse(localStorage.getItem('clasificaciones')) || [];
+                        const clasificacion = clasificaciones.find((cl) => String(cl.idclasificacion) === String(data));
+                        return clasificacion ? clasificacion.clasificacion : 'Desconocido';
+                    }
+                },
+                { data: 'tiva', title: 'IVA' },
+                { data: 'stockactual', title: 'Stock', render: data => data || "0" },
+                { data: 'preventa', title: 'Costo', render: data => data || "0" },
+                { data: 'precio', title: 'Precio', render: data => data || "0" },
+                {
+                    data: null,
+                    className: "no-exportar",
+                    title: 'Acciones',
+                    orderable: false,
+                    render: function (data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-warning me-1 btn-editar animate__animated animate__pulse" data-id="${row.idarticulo}" title="Editar"><i class="bi bi-pencil-square"></i></button>
+                            <button class="btn btn-sm btn-danger btn-eliminar animate__animated animate__shakeX" data-id="${row.idarticulo}" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        `;
+                    }
+                }
+            ],
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer"></i> Imprimir',
+                    className: 'btn btn-outline-secondary'
+                },
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-filetype-xlsx"></i> Exportar a Excel',
+                    className: 'btn btn-outline-success'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: '<i class="bi bi-file-earmark-pdf"></i> Exportar PDF',
+                    className: 'btn btn-outline-danger',
+                    exportOptions: {
+                        columns: ':not(.no-exportar)'
+                    }
+                },
+                {
+                    text: '<i class="bi bi-file-earmark-plus"></i> Nuevo artículo',
+                    className: 'btn btn-primary animate__animated animate__pulse',
+                    action: function () {
+                        cargarCombos();
+                        $('#modalNuevoArticulo').modal('show');
+                    }
+                }
+            ],
+            responsive: true,
+            language: {
+                url: "dt/es-ES.js"
+            }
+        });
+    }
+
+    function guardarArticulos(data) {
+        localStorage.setItem('articulos', JSON.stringify(data));
+        tabla.clear().rows.add(data).draw();
+    }
+
+    function obtenerSiguienteId(articulos) {
+        if (articulos.length === 0) {
+            return 1;
+        } else {
+            const maxId = Math.max(...articulos.map(a => a.idarticulo || 0));
+            return maxId + 1;
+        }
+    }
+
+    function verificarId(arr, campo, valor) {
+        return arr.some(item => item[campo] === valor);
+    }
+// ...existing code...
+function cerrarSesion() {
+  alertify.confirm("Cerrar sesión", "¿Estás seguro de que deseas cerrar sesión?",
+    function () {
+      sessionStorage.removeItem("sesionActiva");
+      localStorage.removeItem("nomUsuario");
+      localStorage.removeItem("rolUsuario");
+      window.location.href = "index.html";
+    },
+    function () {
+      alertify.error("Cancelado");
+    }
+  ).set('labels', { ok: 'Sí', cancel: 'No' });
+}
+// ...existing code...
+    </script>
+</body>
+</html>

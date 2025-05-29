@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marcas</title>
+    <link rel="icon" type="image/png" href="img/working.png">
+    <!-- ESTILOS DEL MENU -->
+    <link href="menu/styles.css" rel="stylesheet" />
+    <!-- BOOTSTRAP ICONS -->
+    <link rel="stylesheet" href="bt-icons/bootstrap-icons.min.css">
+    <!-- DATATABLES -->
+    <link rel="stylesheet" href="dt/datatables.min.css">
+    <link rel="stylesheet" href="dt/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="dt/buttons.dataTables.min.css">
+    <!-- ALERTIFYJS -->
+    <link rel="stylesheet" href="alert/alertify.min.css">
+    <link rel="stylesheet" href="alert/themes/default.min.css">
+    <!-- Animate.css para animaciones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="alert/alertify.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
+            min-height: 100vh;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .table {
+            background: #fff;
+        }
+        .modal-content {
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        .btn-primary, .btn-success, .btn-danger, .btn-warning {
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover, .btn-success:hover, .btn-danger:hover, .btn-warning:hover {
+            transform: scale(1.07);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        .dataTables_wrapper .dataTables_filter input {
+            border-radius: 20px;
+            border: 1px solid #b6b6b6;
+            padding: 4px 12px;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            border-radius: 50px !important;
+            margin: 0 2px;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: #0d6efd !important;
+            color: #fff !important;
+        }
+    </style>
+</head>
+<body>
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark shadow animate__animated animate__fadeInDown">
+        <a class="navbar-brand ps-3" href="menu.html"><i class="bi bi-arrow-left-circle"></i> Volver</a>
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="bi bi-list"></i></button>
+        <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-person-fill"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end animate__animated animate__fadeIn" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="#!">Configuración</a></li>
+                    <li><a class="dropdown-item" href="#" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <a class="nav-link" href="menu.html">
+                            <div class="sb-nav-link-icon"><i class="bi bi-house-door"></i></div>
+                            Menú
+                        </a>
+                        <hr>
+                        <div class="text-center mb-2">
+                            <button class="btn btn-danger w-100 animate__animated animate__pulse"
+                                style="font-weight:bold; letter-spacing:1px;"
+                                onclick="reiniciarDatosMarcas()">
+                                <i class="bi bi-arrow-clockwise"></i> Reiniciar datos
+                            </button>
+                            <small class="text-muted d-block mt-1" style="font-size:0.85em;">
+                                Restaura los datos de ejemplo<br>de marcas.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Iniciado por:</div>
+                    <div id="usuario">Usuario</div>
+                </div>
+            </nav>
+        </div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-2 animate__animated animate__fadeInDown text-primary fw-bold">Marcas</h1>
+                    <div class="row animate__animated animate__fadeInUp">
+                        <table id="tabla_marcas" class="display compact table table-striped table-hover shadow rounded" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Id Marca</th>
+                                    <th>Nombre</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal Nueva Marca -->
+    <div class="modal fade" id="modalNuevaMarca" tabindex="-1" aria-labelledby="modalMarcaLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog animate__animated animate__zoomIn">
+            <form id="formNuevaMarca" class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalMarcaLabel"><i class="bi bi-plus-circle"></i> Agregar Nueva Marca</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label class="form-label">Marca</label>
+                        <input type="text" id="marca" class="form-control text-uppercase" required minlength="2" maxlength="50">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-danger" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Guardar Marca</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Marca -->
+    <div class="modal fade" id="modalEditarMarca" tabindex="-1" aria-labelledby="modalEditarMarcaLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog animate__animated animate__zoomIn">
+            <form id="formEditarMarca" class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="modalEditarMarcaLabel"><i class="bi bi-pencil-square"></i> Editar Marca</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_idmarca">
+                    <div class="mb-2">
+                        <label class="form-label">Marca</label>
+                        <input type="text" id="edit_marca" class="form-control text-uppercase" required minlength="2" maxlength="50">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"><i class="bi bi-x-circle"></i> Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<!-- Importar el archivo JavaScript -->
+<script src="js/menu.js"></script>
+<script src="js/bdP.js"></script>
+<script src="js/sistemFunctions.js"></script>
+<script src="menu/bootstrap.bundle.min.js"></script>
+<script src="menu/scripts.js"></script>
+<!-- DATATABLES -->
+<script src="dt/jquery-3.7.1.js"></script>
+<script src="dt/datatables.min.js"></script>
+<script src="dt/jquery.dataTables.min.js"></script>
+<!-- DATATABLES Buttons extension -->
+<script src="dt/dataTables.buttons.min.js"></script>
+<script src="dt/buttons.print.min.js"></script>
+<script src="dt/buttons.html5.min.js"></script>
+<!-- DATATABLES JSZip y pdfmake para exportar -->
+<script src="dt/jszip.min.js"></script>
+<script src="dt/pdfmake.min.js"></script>
+<script src="dt/vfs_fonts.js"></script>
+<!-- DATATABLES Idioma Español -->
+<script src="dt/es-ES.js"></script>
+ 
+<script>
+    if(!sessionStorage.getItem("sesionActiva")){
+      localStorage.removeItem("nomUsuario");
+      localStorage.removeItem("rolUsuario");
+      window.location.href = "Pagerror.html";
+    }
+    var usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    document.getElementById('usuario').textContent = localStorage.getItem("nomUsuario") || "Usuario";
+
+    let marcas = JSON.parse(localStorage.getItem("marcas")) || [];
+    let tabla;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        cargarTablaMarcas();
+
+        // Evento para agregar una nueva marca
+        document.getElementById('formNuevaMarca').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const nombre = document.getElementById('marca').value.trim().toUpperCase();
+
+            // Validar duplicado
+            const existe = marcas.some(m =>
+                m.marca === nombre
+            );
+            if (existe) {
+                alertify.error("Marca duplicada: ya existe una marca con esos datos.");
+                return;
+            }
+            
+            const nuevaMarca = {
+                idmarca: obtenerSiguienteId(marcas),
+                marca: document.getElementById('marca').value.trim().toUpperCase()
+            };
+            marcas.push(nuevaMarca);
+            guardarMarcas(marcas);
+            this.reset();
+            $('#modalNuevaMarca').modal('hide');
+            alertify.success("Marca agregada correctamente.");
+        });
+
+        // Evento para editar una marca
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.btn-editar')) {
+                const id = parseInt(e.target.closest('.btn-editar').dataset.id);
+                const marca = marcas.find(m => m.idmarca === id);
+                if (marca) {
+                    document.getElementById('edit_idmarca').value = marca.idmarca;
+                    document.getElementById('edit_marca').value = marca.marca;
+                    $('#modalEditarMarca').modal('show');
+                }
+            }
+        });
+
+        document.getElementById('formEditarMarca').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('edit_idmarca').value);
+            const index = marcas.findIndex(m => m.idmarca === id);
+            if (index !== -1) {
+                const existeDuplicado = marcas.some((m, i) =>
+                    m.marca === document.getElementById('edit_marca').value.trim().toUpperCase() &&
+                    i !== index // Asegurarse de que no sea la misma marca
+                );
+                if (existeDuplicado) {
+                    alertify.error("Marca duplicada: ya existe una marca con esos datos.");
+                    return;
+                }
+                marcas[index] = {
+                    idmarca: id,
+                    marca: document.getElementById('edit_marca').value.trim().toUpperCase(),
+                };
+                guardarMarcas(marcas);
+                tabla.clear().rows.add(marcas).draw();
+                $('#modalEditarMarca').modal('hide');
+                alertify.success("Marca actualizada correctamente.");
+            }
+        });
+
+        // Evento para eliminar una marca
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.btn-eliminar')) {
+                const id = parseInt(e.target.closest('.btn-eliminar').dataset.id);
+                alertify.confirm("Eliminar marca", "¿Estás seguro de eliminar esta marca?",
+                    function () {
+                        marcas = marcas.filter(m => m.idmarca !== id);
+                        guardarMarcas(marcas);
+                        tabla.clear().rows.add(marcas).draw();
+                        alertify.success("Marca eliminada correctamente.");
+                    },
+                    function () {
+                        alertify.error("Eliminación cancelada.");
+                    }
+                ).set('labels', { ok: 'Sí', cancel: 'No' });
+            }
+        });
+    });
+
+    function cargarTablaMarcas() {
+        if ($.fn.DataTable.isDataTable('#tabla_marcas')) {
+            $('#tabla_marcas').DataTable().destroy();
+        }
+
+        tabla = new DataTable("#tabla_marcas", {
+            data: marcas,
+            columns: [
+                { data: 'idmarca', title: 'Id Marca' },
+                { data: 'marca', title: 'Marca' },
+                {
+                    data: null,
+                    className: "no-exportar",
+                    title: 'Acciones',
+                    render: function (data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-warning me-1 btn-editar animate__animated animate__pulse" data-id="${row.idmarca}" title="Editar"><i class="bi bi-pencil-square"></i></button>
+                            <button class="btn btn-sm btn-danger btn-eliminar animate__animated animate__shakeX" data-id="${row.idmarca}" title="Eliminar"><i class="bi bi-trash"></i></button>
+                        `;
+                    }
+                }
+            ],
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'print',
+                    text: '<i class="bi bi-printer"></i> Imprimir',
+                    className: 'btn btn-outline-secondary'
+                },
+                {
+                    extend: 'excelHtml5',
+                    text: '<i class="bi bi-filetype-xlsx"></i> Exportar a Excel',
+                    className: 'btn btn-outline-success'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    text: 'Exportar PDF',
+                    className: 'btn btn-outline-danger',
+                    exportOptions: {
+                        columns: ':not(.no-exportar)'
+                    }
+                },
+                {
+                    text: '<i class="bi bi-file-earmark-plus"></i> Nueva Marca',
+                    className: 'btn btn-sm btn-primary animate__animated animate__pulse',
+                    action: function () {
+                        $('#modalNuevaMarca').modal('show');
+                    }
+                }
+            ],
+            responsive: true,
+            language: {
+                url: "dt/es-ES.js"
+            }
+        });
+    }
+
+    function guardarMarcas(data) {
+        localStorage.setItem('marcas', JSON.stringify(data));
+        tabla.clear().rows.add(data).draw();
+    }
+
+    function obtenerSiguienteId(marcas) {
+        if (marcas.length === 0) {
+            return 1;
+        } else {
+            const maxId = Math.max(...marcas.map(m => m.idmarca || 0));
+            return maxId + 1;
+        }
+    }
+
+    function reiniciarDatosMarcas() {
+        localStorage.removeItem("marcas");
+        if (typeof datos === "function") datos();
+        location.reload();
+    }
+
+    // ...existing code...
+function cerrarSesion() {
+  alertify.confirm("Cerrar sesión", "¿Estás seguro de que deseas cerrar sesión?",
+    function () {
+      sessionStorage.removeItem("sesionActiva");
+      localStorage.removeItem("nomUsuario");
+      localStorage.removeItem("rolUsuario");
+      window.location.href = "index.html";
+    },
+    function () {
+      alertify.error("Cancelado");
+    }
+  ).set('labels', { ok: 'Sí', cancel: 'No' });
+}
+// ...existing code...
+</script>
+</body>
+</html>
